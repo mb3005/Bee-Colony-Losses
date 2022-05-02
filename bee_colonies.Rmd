@@ -1,0 +1,118 @@
+---
+title: "Bee_Colony_Losses"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+--------------------------------------------------------------------------------------------------------------------------
+```{r}
+library(tidyverse)
+library(lubridate)
+
+```
+
+
+```{r}
+honey <- read_csv("Honey.csv")
+honey
+
+colony <- read_csv("Colony.csv")
+colony
+
+stressors <- read_csv("Stressors.csv")
+stressors
+
+summary(honey)
+
+# not required to convert year numbers to date format as there is no month/day information 
+
+sum(is.na(honey)) # no missing values in this data set 
+```
+
+
+```{r}
+# 2019-Q2 seems to be missing a lot of information 
+colony$`Starting Colonies` <- as.numeric(colony$`Starting Colonies`)
+colony[is.na(colony$`Starting Colonies`), ]
+
+# let's take a look at all other values in 2019-Q2 
+
+colony %>% 
+  filter(Year == "2019-Q2")
+
+# looks like there is no information for this quarter; it would be helpful to remove these rows along with any other
+# rows that have missing values in all of these numeric columns 
+
+colony <- colony %>% 
+  filter_at(vars(`Starting Colonies`, `Maximum Colonies`, `Lost Colonies`, `Percent Loss`, `Added Colonies`, `Renovated Colonies`, `Percent Renovated`), all_vars(!is.na(.)))
+
+colony
+
+```
+
+```{r} 
+# some number columns classified as character; converting chr to numeric (Starting Colonies, Maximum Colonies, Lost Colonies, Percent Loss, Added Colonies, Renovated Colonies, Percent Renovated, Year)
+
+colony
+
+summary(colony)
+colony <- colony %>% 
+  mutate_at(c(2:8), as.numeric)
+
+sapply(colony, class)
+
+# many NAs are now apparent in percent_renovated column because they were previously denoted as (Z) for being 0/close
+# to zero. We can fill in those NA values with their calculations 
+
+colony <- colony %>% 
+  mutate(`Percent Renovated` = case_when(
+    !is.na(`Percent Renovated`) ~ `Percent Renovated`, 
+    is.na(`Percent Renovated`) ~ ((`Renovated Colonies`)*100/(`Maximum Colonies`))
+  ))
+
+colony$`Percent Renovated` <- round(colony$`Percent Renovated`, 1)
+colony
+
+sapply(colony, class)
+
+sum(is.na(colony))
+
+
+```
+
+
+```{r}
+# some number columns classified as character; converting chr to numeric 
+summary(stressors)
+
+
+```
+```{r}
+# exploring and getting to know the data 
+
+unique(colony$State)
+unique(honey$State)
+unique(stressors$State)
+
+
+colony[colony$State == "United States", ]
+
+```
+```{r}
+fifteen <- colony %>% 
+  filter(Year == "2015-Q1")
+
+
+```
+
+
+
+
+
