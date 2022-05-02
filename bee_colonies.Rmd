@@ -3,23 +3,15 @@ title: "Bee_Colony_Losses"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
 --------------------------------------------------------------------------------------------------------------------------
-```{r}
+```{r  Loading Packages }
 library(tidyverse)
 library(lubridate)
 
 ```
 
 
-```{r}
+```{r  Reading CSV files}
 honey <- read_csv("Honey.csv")
 honey
 
@@ -37,7 +29,7 @@ sum(is.na(honey)) # no missing values in this data set
 ```
 
 
-```{r}
+```{r  Colony: Removing rows with mostly NA values }
 # 2019-Q2 seems to be missing a lot of information 
 colony$`Starting Colonies` <- as.numeric(colony$`Starting Colonies`)
 colony[is.na(colony$`Starting Colonies`), ]
@@ -57,7 +49,7 @@ colony
 
 ```
 
-```{r} 
+```{r  Colony: Imputing missing values, and converting character to numeric } 
 # some number columns classified as character; converting chr to numeric (Starting Colonies, Maximum Colonies, Lost Colonies, Percent Loss, Added Colonies, Renovated Colonies, Percent Renovated, Year)
 
 colony
@@ -74,19 +66,48 @@ sapply(colony, class)
 colony <- colony %>% 
   mutate(`Percent Renovated` = case_when(
     !is.na(`Percent Renovated`) ~ `Percent Renovated`, 
-    is.na(`Percent Renovated`) ~ ((`Renovated Colonies`)*100/(`Maximum Colonies`))
+    is.na(`Percent Renovated`) ~ (round(`Renovated Colonies`*100/`Maximum Colonies`))
   ))
 
-colony$`Percent Renovated` <- round(colony$`Percent Renovated`, 1)
 colony
 
 sapply(colony, class)
 
-sum(is.na(colony))
+# are there any other NA values in the data frame? 
+colony[rowSums(is.na(colony)) > 0, ]
 
+# there are some missing values in 'Percent Loss' for some states, which can be computed 
+# Percent loss = number of lost colonies divided by max colonies 
+
+colony <- colony %>% 
+  mutate(`Percent Loss` = case_when(
+    !is.na(`Percent Loss`) ~ `Percent Loss`,
+    is.na(`Percent Loss`) ~ (round(`Lost Colonies`*100/`Maximum Colonies`))
+  )
+  )
+
+colony[rowSums(is.na(colony)) > 0, ]
+
+# Vermont missing data for renovated colonies 
+# United States is also missing maximum colonies values; can we sum up all the states to fill in the missing values? 
+```
+
+
+```{r  Confirming USA values are sum of all values}
+
+not_us <- colony[!(colony$State == 'United States'), ]
+unique(not_us$State)
+
+not_us %>% 
+  group_by(Year) %>% 
+  summarise(total = sum(`Starting Colonies`))
 
 ```
 
+```{r}
+colony %>% 
+  filter(State == 'United States')
+```
 
 ```{r}
 # some number columns classified as character; converting chr to numeric 
