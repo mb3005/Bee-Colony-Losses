@@ -7,9 +7,10 @@ output: html_document
 ```{r  Loading Packages }
 library(tidyverse)
 library(lubridate)
+library(highcharter)
+detach(package:MASS, unload=TRUE)
 
 ```
-
 
 ```{r  Reading CSV files}
 honey <- read_csv("Honey.csv")
@@ -52,13 +53,8 @@ colony
 ```{r  Colony df: Imputing missing values, and converting character to numeric } 
 # some number columns classified as character; converting chr to numeric (Starting Colonies, Maximum Colonies, Lost Colonies, Percent Loss, Added Colonies, Renovated Colonies, Percent Renovated, Year)
 
-colony
-
-summary(colony)
 colony <- colony %>% 
   mutate_at(c(2:8), as.numeric)
-
-sapply(colony, class)
 
 # many NAs are now apparent in percent_renovated column because they were previously denoted as (Z) for being 0/close
 # to zero. We can fill in those NA values with their calculations 
@@ -77,7 +73,7 @@ sapply(colony, class)
 colony[rowSums(is.na(colony)) > 0, ]
 
 # there are some missing values in 'Percent Loss' for some states, which can be computed 
-# Percent loss = number of lost colonies divided by max colonies 
+# Percent loss = number of lost colonies / max colonies 
 
 colony <- colony %>% 
   mutate(`Percent Loss` = case_when(
@@ -90,6 +86,21 @@ colony[rowSums(is.na(colony)) > 0, ]
 
 # Vermont missing data for renovated colonies 
 # United States is also missing maximum colonies values; can we sum up all the states to fill in the missing values? 
+
+# separating Year from Quarter 
+colony <- colony %>% 
+  separate(col= Year, into = c("Year", "Quarter", sep="-")) %>% 
+  select(-c("-"))
+
+colony
+
+colony <- colony %>% 
+  mutate_at(c(2:9), as.numeric)
+
+sapply(colony, class)
+
+colony
+
 ```
 
 
@@ -98,31 +109,36 @@ colony[rowSums(is.na(colony)) > 0, ]
 not_us <- colony[!(colony$State == 'United States'), ]
 unique(not_us$State)
 
-not_us %>% 
+not_us <- not_us %>% 
   group_by(Year) %>% 
   summarise(total = sum(`Starting Colonies`))
+# 2015 starting colonies total 11681750
 
 colony %>% 
   filter(State == 'United States')
 
 not_US_2015Q1 <- colony %>% 
-  filter((Year == '2015-Q1') & (!State == 'United States'))
+  filter((Year == '2015') & (!State == 'United States'))
 
 max_2015 <- not_US_2015Q1 %>%  
   summarise(sum(`Maximum Colonies`))
-# 3619490
+# 14781830
 
-# max colonies for the US for each year/quarter; first output matches previous test case for 2015-Q1 
+
+# max colonies for the US for each year/quarter; output for 2015 matches previous test case: 14781830
 US_max_colonies <- colony %>% 
-  select(State, `Maximum Colonies`, Year) %>% 
+  select(State, `Maximum Colonies`, Year, Quarter) %>% 
   filter(!State == "United States") %>% 
-  group_by(Year) %>% 
-  summarise("Max Colonies" = sum(`Maximum Colonies`))
+  group_by(Year, Quarter) %>% 
+  summarise(`Max Colonies` = sum(`Maximum Colonies`))
+
+US_max_colonies
 
 US_colony <- colony %>% 
   select(everything()) %>% 
   filter(State == 'United States') %>% 
   mutate(`Maximum Colonies` = US_max_colonies$`Max Colonies`, .after =`Starting Colonies`)
+
 
 US_colony
 
@@ -137,28 +153,29 @@ colony[rowSums(is.na(colony)) > 0, ]  # only Vermont showing NA values under ren
 ```{r  Stressors df: Cleaning Stressors dataset; converting chr to numeric, separating United States values}
 summary(stressors)
 
-stressors <- stressors %>% 
-  mutate_at(c(2:7), as.numeric)
-
-stressors
-
 sum(is.na(stressors))   # 597 missing values 
 
-stressors[rowSums(is.na(stressors)) > 0, ]
+stressors[rowSums(is.na(stressors)) > 0, ]  # showing all rows that have NA values 
 
-stressors <- stressors[!stressors$State == 'United States', ]
-stressors %>% 
-  arrange(State)
+# Splitting Year into two columns: Year and Quarter 
+stressors <- stressors %>% 
+  separate(col= Year, into = c("Year", "Quarter", sep="-")) %>% 
+  select(-c("-"))
+
+stressors <- stressors %>% 
+  mutate_at(c(2:8), as.numeric)
+
+stressors
 
 # separating out US values into its own dataframe 
 US_stressors <- stressors[stressors$State == 'United States', ]
 
-US_stressors
+stressors <- stressors[!stressors$State == 'United States', ]
 
 ```
 
 
-```{r  Honey dataframe: checking missing values and separating US values}
+```{r  Honey dataframe: checking missing values, separating US values, and adjusting Year values}
 summary(honey) 
 
 sum(is.na(honey))  # no immediately apparent NA values 
@@ -171,6 +188,15 @@ honey <- honey[!honey$State == 'United States', ]
 
 ```
 
+```{r  Visual Exploration}
+US_stressors   # 25x8 
+US_colony      # 25x9
+US_honey       # 6x8
+```
+```{r  Broad Glance: How have bee clonies overall changed over time in the US? }
+US_colony %>% 
+  ggplot(aes(x = Year, y = `Starting Colonies`)) + geom_line()
+```
 
 
 
