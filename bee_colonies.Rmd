@@ -9,6 +9,10 @@ library(tidyverse)
 library(lubridate)
 library(highcharter)
 library(RColorBrewer)
+library(plotly)
+library(viridis)
+library(geojsonio)
+library(rgdal)
 detach(package:MASS, unload=TRUE)
 
 ```
@@ -242,7 +246,7 @@ US_stressors %>%
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) 
 ```
 
-```{r  Examining Honey Production Over Time }
+```{r  Examining Honey Production Value Over Time }
 
 honey_overtime <- read.csv("honeyproduction.csv")
 
@@ -279,11 +283,123 @@ US_honey_overtime %>%
   labs(x = 'Year', y='Value of Production in (Million USD)', title = 'Value of Honey Production in the US Over Time') +
   theme(plot.title = element_text(hjust = .5)) 
 
+```
+
+```{r  Amount of honey produced in the US over time }
+
+tot_prod <- honey_overtime %>% 
+  group_by(year) %>% 
+  summarise(tot_prod = sum(totalprod)/1000) %>% 
+  rename(Year = year, "Production (1,000 pounds)" = tot_prod)
+
+US_honey_prod <- US_honey %>% 
+  select(Year, `Production (1,000 pounds)`)
+
+tot_prod
+
+US_honey_totprod <- bind_rows(US_honey_prod, tot_prod)
 
 
+US_honey_totprod <- US_honey_totprod %>% 
+  add_row(Year = 2013, "Production (1,000 pounds)" = 149550) %>% 
+  add_row(Year = 2014, "Production (1,000 pounds)" = 178310)
 
+US_honey_totprod <- US_honey_totprod %>% 
+  arrange(Year)
+
+US_honey_totprod
+
+#plotting graph 
+library(MASS)
+
+US_honey_totprod %>% 
+  ggplot(aes(x=Year, y= `Production (1,000 pounds)`)) + geom_col(fill = "#e3b526") +
+  labs(x = 'Year', y='Honey Production (1,000 lbs)', title = 'Amount of Honey Produced in the US Over Time')+
+  theme(plot.title = element_text(hjust = .5)) 
+  
 
 ```
+
+```{r  Mapping colony loss rate by states }
+loss_2015 <- colony %>% 
+  filter(Year == 2015)
+
+loss_2015 <- loss_2015 %>% 
+  rename(perc_loss = `Percent Loss`)
+
+loss_2015
+
+loss_2015$hover <- with(loss_2015, paste(loss_2015$State, "Maximum Colonies:", loss_2015$`Maximum Colonies`, "State Colony Perc Loss:", loss_2015$perc_loss, "Number of Lost Colonies:", loss_2015$`Lost Colonies`, sep="<br>"))
+
+loss_2015
+
+l <- list(color = toRGB("white"), width = 2)
+
+g <- list(
+  scope = 'usa',
+  projection = list(type = 'albers usa'),
+  showlakes = TRUE,
+  lakecolor = toRGB('steelblue')
+)
+
+p2015 <- plot_geo(loss_2015, locationmode = 'USA-states') %>% 
+  add_trace(
+  z = ~perc_loss, text = ~hover, locations = ~State, 
+  color = ~perc_loss, colors = 'Purples'
+  ) %>% 
+  colorbar(title = "Percent Colony Loss") %>% 
+  layout(
+    title = "Percent US Colony Loss in 2015",
+    geo = g
+  )
+
+p2015
+
+```
+
+
+```{r  Mapping State Percent Colony Loss}
+
+loss_2015 <- colony %>% 
+  select(everything()) %>% 
+  filter(Year == 2015) %>% 
+  group_by(State, Year) %>% 
+  mutate(tot_loss = sum(`Lost Colonies`)) %>% 
+  mutate(avg_loss = mean(`Percent Loss`)) %>% 
+  arrange(State, Year)
+
+summary(loss_2015)  # avg_loss ranges from 5.75 - 21 % for each state 
+
+# map creation
+# prepare binning 
+loss_2015$bin <- cut(loss_2015$avg_loss, breaks = c(seq(5,20,5), Inf), labels = c("5-10", "10-15", "15-20", "20+"), include.lowest=TRUE)
+
+# colour scale from viridis color palette
+my_palette <- rev(plasma(8))[c(-1,-8)]
+
+# plot 
+map <- geojson_read("us_states_hexgrid.geojson", what = "sp")
+
+map@data = map@data %>%
+  mutate(google_name = gsub(" \\(United States\\)", "", google_name))
+
+plot(map)
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
