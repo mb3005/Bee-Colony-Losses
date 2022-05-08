@@ -8,6 +8,7 @@ output: html_document
 library(tidyverse)
 library(lubridate)
 library(highcharter)
+library(RColorBrewer)
 detach(package:MASS, unload=TRUE)
 
 ```
@@ -101,52 +102,32 @@ sapply(colony, class)
 
 colony
 
+colony$Year <- factor(colony$Year)
+colony$Quarter <- factor(colony$Quarter)
+sapply(colony, class)
+
 ```
 
 
-```{r  Colony df: Confirming USA values are sum of all values & calculating max colony size for the US in each year/quarter}
-
-not_us <- colony[!(colony$State == 'United States'), ]
-unique(not_us$State)
-
-not_us <- not_us %>% 
-  group_by(Year) %>% 
-  summarise(total = sum(`Starting Colonies`))
-# 2015 starting colonies total 11681750
-
-colony %>% 
-  filter(State == 'United States')
-
-not_US_2015Q1 <- colony %>% 
-  filter((Year == '2015') & (!State == 'United States'))
-
-max_2015 <- not_US_2015Q1 %>%  
-  summarise(sum(`Maximum Colonies`))
-# 14781830
-
-
-# max colonies for the US for each year/quarter; output for 2015 matches previous test case: 14781830
-US_max_colonies <- colony %>% 
-  select(State, `Maximum Colonies`, Year, Quarter) %>% 
-  filter(!State == "United States") %>% 
-  group_by(Year, Quarter) %>% 
-  summarise(`Max Colonies` = sum(`Maximum Colonies`))
-
-US_max_colonies
-
-US_colony <- colony %>% 
-  select(everything()) %>% 
-  filter(State == 'United States') %>% 
-  mutate(`Maximum Colonies` = US_max_colonies$`Max Colonies`, .after =`Starting Colonies`)
-
-
-US_colony
+```{r  Colony df: Separating national colony counts from state counts, feature engineering}
 
 # removing US values from the original colony data set 
+
+US_colony <- colony[colony$State == 'United States',]
 
 colony <- colony[!colony$State == 'United States',]
 
 colony[rowSums(is.na(colony)) > 0, ]  # only Vermont showing NA values under renovated colonies and percent renovated 
+
+US_colony
+
+US_colony2 <- US_colony %>% 
+  select(everything()) %>% 
+  group_by(Year) %>% 
+  mutate(tot_loss = sum(`Lost Colonies`)) %>% 
+  mutate(rel_perc_loss = round((`Lost Colonies`*100 /`tot_loss`),0))
+
+US_colony2
 ```
 
 
@@ -165,7 +146,9 @@ stressors <- stressors %>%
 stressors <- stressors %>% 
   mutate_at(c(2:8), as.numeric)
 
-stressors
+stressors$Year <- factor(stressors$Year)
+stressors$Quarter <- factor(stressors$Quarter)
+sapply(stressors, class)
 
 # separating out US values into its own dataframe 
 US_stressors <- stressors[stressors$State == 'United States', ]
@@ -193,10 +176,115 @@ US_stressors   # 25x8
 US_colony      # 25x9
 US_honey       # 6x8
 ```
-```{r  Broad Glance: How have bee clonies overall changed over time in the US? }
-US_colony %>% 
-  ggplot(aes(x = Year, y = `Starting Colonies`)) + geom_line()
+```{r  Losses over Seasons/Quarters }
+
+US_colony2 %>% 
+  ggplot(aes(x = Quarter, y = rel_perc_loss, group = Year, colour = Year)) + geom_line() + 
+  theme_bw() + 
+  labs(x = "Quarter", y="Relative Percent Colony Loss", title="Relative Percent Colony Loss in the US") + 
+  theme(plot.title = element_text(hjust = .5))
+
+
+
+# We can see that for years 2015-2018 and 2020, there seems to be a seasonal type of pattern where 
+# relative percent colony losses are occurring mostly in the colder months. Losses generally seem to be # lower in Q2 (Apr - Jun), then increase in the summer, before peaking in the winter months. 
+
+# Let's look into 2021 and 2019 in more detail. Let's also see if there seems to be a cyclical pattern
+# over time 
 ```
+
+```{r}
+
+US_colony2 <- US_colony2 %>% 
+  mutate(Date = str_c(Year, Quarter))
+
+US_colony2$Date <- str_replace(US_colony2$Date, "Q", "-")
+
+US_colony2
+
+US_colony2 %>% 
+  ggplot(aes(x=Date, y=rel_perc_loss, fill = Quarter)) + geom_col() +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+  labs(x = 'Date', y='Relative Percent Colony Loss', title = 'Relative Percent Colony Loss in the US Over Time')+
+  theme(plot.title = element_text(hjust = .5)) +
+  scale_fill_brewer(palette = "Paired") 
+
+
+###### switch blue and green colours; blue or winter months, green for spring/summer 
+###### if more time, plot a smooth line over the curves to show the seasonal trend 
+```
+
+```{r}
+# looking more closely at Years 2019 and 2021, we want to bring forward the stressors data
+US_colony2 <- US_colony2 %>% relocate(Date, .after = Quarter)
+
+US_stressors
+US_stressors <- US_stressors %>% 
+  mutate(Date = str_c(Year, Quarter))
+
+US_stressors$Date <- str_replace(US_stressors$Date, "Q", "-")
+US_stressors
+
+US_stressors %>% 
+  filter(!is.na(`Varroa Mites (Percent)`)) %>% 
+  ggplot(aes(x=Date, y=`Varroa Mites (Percent)`, fill = Quarter)) + geom_col(fill = "#69b3a2") +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) 
+
+US_stressors
+
+```
+```{r}
+US_stressors
+US_stressors %>% 
+  filter(!is.na(`Varroa Mites (Percent)`)) %>% 
+  ggplot(aes(x=Date, y=`Other pests and parasites (Percent)`, fill = Quarter)) + geom_col(fill = "#69b3a2") +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) 
+```
+
+```{r  Examining Honey Production Over Time }
+
+honey_overtime <- read.csv("honeyproduction.csv")
+
+US_honeyovertime <- honey_overtime %>% 
+  group_by(year) %>% 
+  summarise(US_prodval = sum(prodvalue))
+
+US_honeyovertime <- US_honeyovertime %>% 
+  mutate('Value of production (1,000 dollars)' = US_prodval/1000) %>% 
+  select(year, 'Value of production (1,000 dollars)') %>% 
+  rename(Year = year)
+
+US_honey_prodval <- US_honey %>% 
+  select(Year, `Value of production (1,000 dollars)`)
+
+US_honey_prodval
+
+US_honey_overtime <- bind_rows(US_honeyovertime, US_honey_prodval)
+
+# subbing in missing values; data extracted from USDA library website 
+US_honey_overtime <- US_honey_overtime %>% 
+  add_row(Year = 2013, `Value of production (1,000 dollars)`= 320037)
+
+US_honey_overtime <- US_honey_overtime %>% 
+  add_row(Year = 2014, `Value of production (1,000 dollars)`= 325946)
+
+US_honey_overtime$`Value of production (1,000 dollars)` <- US_honey_overtime$`Value of production (1,000 dollars)`/1000
+
+US_honey_overtime <- US_honey_overtime %>% 
+  rename("Value of production (millions)" = `Value of production (1,000 dollars)` )
+
+US_honey_overtime %>% 
+  ggplot(aes(x=Year, y=`Value of production (millions)`)) + geom_col(fill = "#e3b526") +   
+  labs(x = 'Year', y='Value of Production in (Million USD)', title = 'Value of Honey Production in the US Over Time') +
+  theme(plot.title = element_text(hjust = .5)) 
+
+
+
+
+
+```
+
 
 
 
