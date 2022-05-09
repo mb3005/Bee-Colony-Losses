@@ -221,23 +221,34 @@ US_colony2 %>%
 ###### if more time, plot a smooth line over the curves to show the seasonal trend 
 ```
 
-```{r}
+```{r  Examining Effects of Stressors on Colony Loss}
 # looking more closely at Years 2019 and 2021, we want to bring forward the stressors data
 US_colony2 <- US_colony2 %>% relocate(Date, .after = Quarter)
 
 US_stressors
 US_stressors <- US_stressors %>% 
-  mutate(Date = str_c(Year, Quarter))
-
-US_stressors$Date <- str_replace(US_stressors$Date, "Q", "-")
-US_stressors
+  mutate(Date = str_c(Year, Quarter, sep=" "))
 
 US_stressors %>% 
   filter(!is.na(`Varroa Mites (Percent)`)) %>% 
   ggplot(aes(x=Date, y=`Varroa Mites (Percent)`, fill = Quarter)) + geom_col(fill = "#69b3a2") +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) + 
+  theme_bw() + 
+  labs(x = 'Date', y='Varroa Mites (Percent)', title = 'Percentage of Colonies Across the US Infected with Varroa Mites ')+
+  theme(plot.title = element_text(hjust = .5)) +
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) 
 
 US_stressors
+
+# Joining US stressors data and US colonies 
+
+US_colony_stressors <- inner_join(US_stressors, US_colony2, by="Date")
+
+US_colony_stressors <- US_colony_stressors %>%  
+select(State.x, `Varroa Mites (Percent)`, `Other pests and parasites (Percent)`, `Diseases (percent)`, `Pesticides (percent)`, `Other (percent)`, `Unknown (percent)`, Date, `Starting Colonies`, `Lost Colonies`, `Percent Loss`, `Added Colonies`, `Renovated Colonies`, `Percent Renovated`, tot_loss, rel_perc_loss)
+
+US_colony_stressors %>% 
+  ggplot()
 
 ```
 ```{r}
