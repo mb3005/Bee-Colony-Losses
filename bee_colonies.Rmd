@@ -185,7 +185,7 @@ US_honey       # 6x8
 ```{r  Losses over Seasons/Quarters }
 
 US_colony2 %>% 
-  ggplot(aes(x = Quarter, y = rel_perc_loss, group = Year, colour = Year)) + geom_line() + 
+  ggplot(aes(x = Quarter, y = rel_perc_loss, group = Year, colour = Year)) + geom_line() + geom_point() +
   theme_bw() + 
   labs(x = "Quarter", y="Relative Percent Colony Loss", title="Relative Percent Colony Loss in the US") + 
   theme(plot.title = element_text(hjust = .5))
@@ -202,9 +202,9 @@ US_colony2 %>%
 ```{r}
 
 US_colony2 <- US_colony2 %>% 
-  mutate(Date = str_c(Year, Quarter))
+  mutate(Date = str_c(Year, Quarter, sep = " "))
 
-US_colony2$Date <- str_replace(US_colony2$Date, "Q", "-")
+
 
 US_colony2
 
@@ -797,16 +797,22 @@ US_colony3 <- US_colony3 %>%
   mutate(colonies_mils = round((`Starting Colonies`/1000000), 2))
   
 US_colony3 %>% 
-  ggplot(aes(x = Date, y= colonies_mils)) + geom_col(fill = "#e3b526") +
-  theme_bw() +
+  ggplot(aes(group= 1)) + 
+  geom_area(aes(x = Date, y= colonies_mils), fill = "#f3c63c", linetype = 1, size = 1.5, colour = "#573307") +
+  theme_bw() + 
+  theme(panel.border = element_blank(), panel.grid.major = element_blank(),
+panel.grid.minor = element_blank(), axis.line = element_line(colour = "black")) + 
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
   labs(x = 'Date', y='Number of Colonies (Millions)', title = 'Number of Bee Colonies in the US Over Time')+
-  theme(plot.title = element_text(hjust = .5)) +
-  scale_fill_brewer(palette = "Paired") 
-
+  theme(plot.title = element_text(hjust = .5))
   
 ```
 
+```{r}
+colony %>% 
+  filter(Quarter == "Q4") %>% 
+  arrange(`Percent Loss`, descending = FALSE)
+```
 
 
 
