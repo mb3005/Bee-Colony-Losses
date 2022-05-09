@@ -794,18 +794,23 @@ US_colony3 <- US_colony %>%
   mutate(Date = str_c(Year, Quarter, sep=" "))
 
 US_colony3 <- US_colony3 %>% 
-  mutate(colonies_mils = round((`Starting Colonies`/1000000), 2))
-  
+  group_by(Year) %>% 
+  mutate(colonies_mils = round((`Starting Colonies`/1000000), 2)) %>% 
+  mutate(colonies_mils_avg = round((mean(colonies_mils)), 2))
+
+US_colony3 <- US_colony3 %>% 
+  filter(Quarter == "Q1")
+
+
 US_colony3 %>% 
   ggplot(aes(group= 1)) + 
-  geom_area(aes(x = Date, y= colonies_mils), fill = "#f3c63c", linetype = 1, size = 1.5, colour = "#573307") +
+  geom_area(aes(x = Year, y= colonies_mils_avg), fill = "#f3c63c", linetype = 1, size = 1.5, colour = "#573307") +
   theme_bw() + 
-  theme(panel.border = element_blank(), panel.grid.major = element_blank(),
-panel.grid.minor = element_blank(), axis.line = element_line(colour = "black")) + 
+  theme(panel.border = element_blank(), panel.grid.major = element_line(size = 2, linetype = "solid", color = "white"), panel.grid.minor = element_line(size = 2, linetype = "solid", color = "white"), axis.line = element_line(colour = "black")) + 
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
-  labs(x = 'Date', y='Number of Colonies (Millions)', title = 'Number of Bee Colonies in the US Over Time')+
+  labs(x = 'Year', y='Number of Colonies (Millions)', title = 'Number of Bee Colonies in the US Over Time')+
   theme(plot.title = element_text(hjust = .5))
-  
+
 ```
 
 ```{r}
