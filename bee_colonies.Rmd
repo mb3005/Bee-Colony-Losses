@@ -13,6 +13,8 @@ library(plotly)
 library(viridis)
 library(geojsonio)
 library(rgdal)
+library(broom)
+library(rgeos)
 detach(package:MASS, unload=TRUE)
 
 ```
@@ -320,43 +322,6 @@ US_honey_totprod %>%
 
 ```
 
-```{r  Mapping colony loss rate by states }
-loss_2015 <- colony %>% 
-  filter(Year == 2015)
-
-loss_2015 <- loss_2015 %>% 
-  rename(perc_loss = `Percent Loss`)
-
-loss_2015
-
-loss_2015$hover <- with(loss_2015, paste(loss_2015$State, "Maximum Colonies:", loss_2015$`Maximum Colonies`, "State Colony Perc Loss:", loss_2015$perc_loss, "Number of Lost Colonies:", loss_2015$`Lost Colonies`, sep="<br>"))
-
-loss_2015
-
-l <- list(color = toRGB("white"), width = 2)
-
-g <- list(
-  scope = 'usa',
-  projection = list(type = 'albers usa'),
-  showlakes = TRUE,
-  lakecolor = toRGB('steelblue')
-)
-
-p2015 <- plot_geo(loss_2015, locationmode = 'USA-states') %>% 
-  add_trace(
-  z = ~perc_loss, text = ~hover, locations = ~State, 
-  color = ~perc_loss, colors = 'Purples'
-  ) %>% 
-  colorbar(title = "Percent Colony Loss") %>% 
-  layout(
-    title = "Percent US Colony Loss in 2015",
-    geo = g
-  )
-
-p2015
-
-```
-
 
 ```{r  Mapping State Percent Colony Loss}
 
@@ -370,32 +335,463 @@ loss_2015 <- colony %>%
 
 summary(loss_2015)  # avg_loss ranges from 5.75 - 21 % for each state 
 
+
+
 # map creation
+
+map <- geojson_read("us_states_hexgrid.geojson", what = "sp")
+map@data <-  map@data %>%
+  mutate(google_name = gsub(" \\(United States\\)", "", google_name))
+map_fortified <- tidy(map, region = "google_name")
+
+# calculating centroid of each hexagon and adding labels 
+
+centers <- cbind.data.frame(data.frame(gCentroid(map, byid= TRUE), id=map@data$iso3166_2))
+
+# merge geospatial and numerical data 
+loss_2015_fortified <- map_fortified %>% 
+  left_join(. , loss_2015, by=c("id" = "State"))
+
+loss_2015_fortified
+
 # prepare binning 
-loss_2015$bin <- cut(loss_2015$avg_loss, breaks = c(seq(5,20,5), Inf), labels = c("5-10", "10-15", "15-20", "20+"), include.lowest=TRUE)
+loss_2015_fortified$bin <- cut(loss_2015_fortified$avg_loss, breaks = c(seq(5,20,5), Inf), labels = c("5-10", "11-15", "16-20", "21+"), include.lowest=TRUE)
 
 # colour scale from viridis color palette
 my_palette <- rev(plasma(8))[c(-1,-8)]
 
-# plot 
+# plotting 
+ggplot() + 
+  geom_polygon(data = loss_2015_fortified, aes(fill = bin, x = long, y= lat, group = group), size = 0, alpha = 0.9) + 
+  geom_text(data = centers, aes(x=x, y=y, label=id), color="white", size = 3, alpha = 0.6) + 
+  theme_void() + 
+  scale_fill_manual(
+    values = my_palette,
+    name = "Average Percentage Colony Loss",
+    guide = guide_legend(keyheight = unit(3, units = "mm"), keywidth=unit(12, units = "mm"), 
+                         label.position = "bottom", title.position = "top", nrow=1)) + 
+  ggtitle("A Map of Percent Colony Loss by State in 2015") + 
+  theme(
+    legend.position=c(0.5, 0.9),
+    text = element_text(color = "#22211d"),
+    plot.background = element_rect(fill = "#f5f5f2", color = NA),
+    panel.background = element_rect(fill = "#f5f5f2", color = NA), 
+    legend.background = element_rect(fill = "#f5f5f2", color = NA),
+    plot.title = element_text(size=16, hjust=0.5, color = "#4e4d47", margin = margin(b = -0.1, t = 0.4,
+                                                                                     l = 2, unit = "cm")),
+  )
+
+```
+
+```{r  State colony loss map during colder months in 2015 }
+loss_2015_coldmonths <- colony %>% 
+  select(everything()) %>% 
+  filter((Year == 2015) & (Quarter %in% c("Q1", "Q4"))) %>% 
+  group_by(State, Year) %>% 
+  mutate(tot_loss = sum(`Lost Colonies`)) %>% 
+  mutate(avg_loss = mean(`Percent Loss`)) %>% 
+  arrange(State, Year)
+
+summary(loss_2015_coldmonths)  # avg_loss ranges from 5.75 - 21 % for each state 
+
+
+
+# map creation
+
 map <- geojson_read("us_states_hexgrid.geojson", what = "sp")
-
-map@data = map@data %>%
+map@data <-  map@data %>%
   mutate(google_name = gsub(" \\(United States\\)", "", google_name))
+map_fortified <- tidy(map, region = "google_name")
 
-plot(map)
+# calculating centroid of each hexagon and adding labels 
+
+centers <- cbind.data.frame(data.frame(gCentroid(map, byid= TRUE), id=map@data$iso3166_2))
+
+# merge geospatial and numerical data 
+loss_2015_coldmonths_fortified <- map_fortified %>% 
+  left_join(. , loss_2015_coldmonths, by=c("id" = "State"))
+
+loss_2015_coldmonths_fortified
+
+# prepare binning 
+loss_2015_coldmonths_fortified$bin <- cut(loss_2015_coldmonths_fortified$avg_loss, breaks = c(seq(1,32,8), Inf), labels = c("1-8", "9-16", "17-24", "25+"), include.lowest=TRUE)
+
+# colour scale from viridis color palette
+my_palette <- rev(plasma(8))[c(-1,-8)]
+
+# plotting 
+ggplot() + 
+  geom_polygon(data = loss_2015_coldmonths_fortified, aes(fill = bin, x = long, y= lat, group = group),color = "white",
+               size = 0, alpha = 0.9) + 
+  geom_text(data = centers, aes(x=x, y=y, label=id),color="white", size = 3, alpha = 0.6) + 
+  theme_void() + 
+  scale_fill_manual(
+    values = my_palette,
+    name = "Average Percentage Colony Loss",
+    guide = guide_legend(keyheight = unit(3, units = "mm"), keywidth=unit(12, units = "mm"), 
+                         label.position = "bottom", title.position = "top", nrow=1)) + 
+  ggtitle("A Map of Percent Colony Loss During Colder Months by State in 2015") + 
+  theme(
+    legend.position=c(0.5, 0.9),
+    text = element_text(color = "#22211d"),
+    plot.background = element_rect(fill = "#f5f5f2", color = NA),
+    panel.background = element_rect(fill = "#f5f5f2", color = NA), 
+    legend.background = element_rect(fill = "#f5f5f2", color = NA),
+    plot.title = element_text(size=12, hjust=0.5, color = "#4e4d47", margin = margin(b = -0.1, t = 0.4,
+                                                                                     l = 2, unit = "cm")),
+  )
 
 ```
 
 
 
 
+```{r  State colony loss map during colder months in 2016} 
+loss_2016_coldmonths <- colony %>% 
+  select(everything()) %>% 
+  filter((Year == 2016) & (Quarter %in% c("Q1", "Q4"))) %>% 
+  group_by(State, Year) %>% 
+  mutate(tot_loss = sum(`Lost Colonies`)) %>% 
+  mutate(avg_loss = mean(`Percent Loss`)) %>% 
+  arrange(State, Year)
+
+summary(loss_2016_coldmonths)  
+
+# map creation
+
+map <- geojson_read("us_states_hexgrid.geojson", what = "sp")
+map@data <-  map@data %>%
+  mutate(google_name = gsub(" \\(United States\\)", "", google_name))
+map_fortified <- tidy(map, region = "google_name")
+
+# calculating centroid of each hexagon and adding labels 
+
+centers <- cbind.data.frame(data.frame(gCentroid(map, byid= TRUE), id=map@data$iso3166_2))
+
+# merge geospatial and numerical data 
+loss_2016_coldmonths_fortified <- map_fortified %>% 
+  left_join(. , loss_2016_coldmonths, by=c("id" = "State"))
+
+loss_2016_coldmonths_fortified
+
+# prepare binning 
+loss_2016_coldmonths_fortified$bin <- cut(loss_2016_coldmonths_fortified$avg_loss, breaks = c(seq(1,32,8), Inf), labels = c("1-8", "9-16", "17-24", "25+"), include.lowest=TRUE)
+
+# colour scale from viridis color palette
+my_palette <- rev(plasma(8))[c(-1,-8)]
+
+# plotting 
+ggplot() + 
+  geom_polygon(data = loss_2016_coldmonths_fortified, aes(fill = bin, x = long, y= lat, group = group),color = "white",
+               size = 0, alpha = 0.9) + 
+  geom_text(data = centers, aes(x=x, y=y, label=id),color="white", size = 3, alpha = 0.6) + 
+  theme_void() + 
+  scale_fill_manual(
+    values = my_palette,
+    name = "Average Percentage Colony Loss",
+    guide = guide_legend(keyheight = unit(3, units = "mm"), keywidth=unit(12, units = "mm"), 
+                         label.position = "bottom", title.position = "top", nrow=1)) + 
+  ggtitle("A Map of Percent Colony Loss During Colder Months by State in 2016") + 
+  theme(
+    legend.position=c(0.5, 0.9),
+    text = element_text(color = "#22211d"),
+    plot.background = element_rect(fill = "#f5f5f2", color = NA),
+    panel.background = element_rect(fill = "#f5f5f2", color = NA), 
+    legend.background = element_rect(fill = "#f5f5f2", color = NA),
+    plot.title = element_text(size=12, hjust=0.5, color = "#4e4d47", margin = margin(b = -0.1, t = 0.4,
+                                                                                     l = 2, unit = "cm")),
+  )
+```
 
 
+```{r   State colony loss map during colder months in 2017}
+loss_2017_coldmonths <- colony %>% 
+  select(everything()) %>% 
+  filter((Year == 2017) & (Quarter %in% c("Q1", "Q4"))) %>% 
+  group_by(State, Year) %>% 
+  mutate(tot_loss = sum(`Lost Colonies`)) %>% 
+  mutate(avg_loss = mean(`Percent Loss`)) %>% 
+  arrange(State, Year)
+
+summary(loss_2017_coldmonths)  
+
+# map creation
+
+map <- geojson_read("us_states_hexgrid.geojson", what = "sp")
+map@data <-  map@data %>%
+  mutate(google_name = gsub(" \\(United States\\)", "", google_name))
+map_fortified <- tidy(map, region = "google_name")
+
+# calculating centroid of each hexagon and adding labels 
+
+centers <- cbind.data.frame(data.frame(gCentroid(map, byid= TRUE), id=map@data$iso3166_2))
+
+# merge geospatial and numerical data 
+loss_2017_coldmonths_fortified <- map_fortified %>% 
+  left_join(. , loss_2017_coldmonths, by=c("id" = "State"))
+
+loss_2017_coldmonths_fortified
+
+# prepare binning 
+loss_2017_coldmonths_fortified$bin <- cut(loss_2017_coldmonths_fortified$avg_loss, breaks = c(seq(1,32,8), Inf), labels = c("1-8", "9-16", "17-24", "25+"), include.lowest=TRUE)
+
+# colour scale from viridis color palette
+my_palette <- rev(plasma(8))[c(-1,-8)]
+
+# plotting 
+ggplot() + 
+  geom_polygon(data = loss_2017_coldmonths_fortified, aes(fill = bin, x = long, y= lat, group = group),color = "white",
+               size = 0, alpha = 0.9) + 
+  geom_text(data = centers, aes(x=x, y=y, label=id),color="white", size = 3, alpha = 0.6) + 
+  theme_void() + 
+  scale_fill_manual(
+    values = my_palette,
+    name = "Average Percentage Colony Loss",
+    guide = guide_legend(keyheight = unit(3, units = "mm"), keywidth=unit(12, units = "mm"), 
+                         label.position = "bottom", title.position = "top", nrow=1)) + 
+  ggtitle("A Map of Percent Colony Loss During Colder Months by State in 2017") + 
+  theme(
+    legend.position=c(0.5, 0.9),
+    text = element_text(color = "#22211d"),
+    plot.background = element_rect(fill = "#f5f5f2", color = NA),
+    panel.background = element_rect(fill = "#f5f5f2", color = NA), 
+    legend.background = element_rect(fill = "#f5f5f2", color = NA),
+    plot.title = element_text(size=12, hjust=0.5, color = "#4e4d47", margin = margin(b = -0.1, t = 0.4,
+                                                                                     l = 2, unit = "cm")),
+  )
+```
+```{r  State colony loss map during colder months in 2018}
+loss_2018_coldmonths <- colony %>% 
+  select(everything()) %>% 
+  filter((Year == 2018) & (Quarter %in% c("Q1", "Q4"))) %>% 
+  group_by(State, Year) %>% 
+  mutate(tot_loss = sum(`Lost Colonies`)) %>% 
+  mutate(avg_loss = mean(`Percent Loss`)) %>% 
+  arrange(State, Year)
+
+summary(loss_2018_coldmonths)  
+
+# map creation
+
+map <- geojson_read("us_states_hexgrid.geojson", what = "sp")
+map@data <-  map@data %>%
+  mutate(google_name = gsub(" \\(United States\\)", "", google_name))
+map_fortified <- tidy(map, region = "google_name")
+
+# calculating centroid of each hexagon and adding labels 
+
+centers <- cbind.data.frame(data.frame(gCentroid(map, byid= TRUE), id=map@data$iso3166_2))
+
+# merge geospatial and numerical data 
+loss_2018_coldmonths_fortified <- map_fortified %>% 
+  left_join(. , loss_2018_coldmonths, by=c("id" = "State"))
+
+loss_2018_coldmonths_fortified
+
+# prepare binning 
+loss_2018_coldmonths_fortified$bin <- cut(loss_2018_coldmonths_fortified$avg_loss, breaks = c(seq(1,32,8), Inf), labels = c("1-8", "9-16", "17-24", "25+"), include.lowest=TRUE)
+
+# colour scale from viridis color palette
+my_palette <- rev(plasma(8))[c(-1,-8)]
+
+# plotting 
+ggplot() + 
+  geom_polygon(data = loss_2018_coldmonths_fortified, aes(fill = bin, x = long, y= lat, group = group),color = "white",
+               size = 0, alpha = 0.9) + 
+  geom_text(data = centers, aes(x=x, y=y, label=id),color="white", size = 3, alpha = 0.6) + 
+  theme_void() + 
+  scale_fill_manual(
+    values = my_palette,
+    name = "Average Percentage Colony Loss",
+    guide = guide_legend(keyheight = unit(3, units = "mm"), keywidth=unit(12, units = "mm"), 
+                         label.position = "bottom", title.position = "top", nrow=1)) + 
+  ggtitle("A Map of Percent Colony Loss During Colder Months by State in 2018") + 
+  theme(
+    legend.position=c(0.5, 0.9),
+    text = element_text(color = "#22211d"),
+    plot.background = element_rect(fill = "#f5f5f2", color = NA),
+    panel.background = element_rect(fill = "#f5f5f2", color = NA), 
+    legend.background = element_rect(fill = "#f5f5f2", color = NA),
+    plot.title = element_text(size=12, hjust=0.5, color = "#4e4d47", margin = margin(b = -0.1, t = 0.4,
+                                                                                     l = 2, unit = "cm")),
+  )
+```
+```{r  State colony loss map during colder months in 2019}
+loss_2019_coldmonths <- colony %>% 
+  select(everything()) %>% 
+  filter((Year == 2019) & (Quarter %in% c("Q1", "Q4"))) %>% 
+  group_by(State, Year) %>% 
+  mutate(tot_loss = sum(`Lost Colonies`)) %>% 
+  mutate(avg_loss = mean(`Percent Loss`)) %>% 
+  arrange(State, Year)
+
+summary(loss_2019_coldmonths)  
+
+# map creation
+
+map <- geojson_read("us_states_hexgrid.geojson", what = "sp")
+map@data <-  map@data %>%
+  mutate(google_name = gsub(" \\(United States\\)", "", google_name))
+map_fortified <- tidy(map, region = "google_name")
+
+# calculating centroid of each hexagon and adding labels 
+
+centers <- cbind.data.frame(data.frame(gCentroid(map, byid= TRUE), id=map@data$iso3166_2))
+
+# merge geospatial and numerical data 
+loss_2019_coldmonths_fortified <- map_fortified %>% 
+  left_join(. , loss_2019_coldmonths, by=c("id" = "State"))
+
+loss_2019_coldmonths_fortified
+
+# prepare binning 
+loss_2019_coldmonths_fortified$bin <- cut(loss_2019_coldmonths_fortified$avg_loss, breaks = c(seq(1,32,8), Inf), labels = c("1-8", "9-16", "17-24", "25+"), include.lowest=TRUE)
+
+# colour scale from viridis color palette
+my_palette <- rev(plasma(8))[c(-1,-8)]
+
+# plotting 
+ggplot() + 
+  geom_polygon(data = loss_2019_coldmonths_fortified, aes(fill = bin, x = long, y= lat, group = group),color = "white",
+               size = 0, alpha = 0.9) + 
+  geom_text(data = centers, aes(x=x, y=y, label=id),color="white", size = 3, alpha = 0.6) + 
+  theme_void() + 
+  scale_fill_manual(
+    values = my_palette,
+    name = "Average Percentage Colony Loss",
+    guide = guide_legend(keyheight = unit(3, units = "mm"), keywidth=unit(12, units = "mm"), 
+                         label.position = "bottom", title.position = "top", nrow=1)) + 
+  ggtitle("A Map of Percent Colony Loss During Colder Months by State in 2019") + 
+  theme(
+    legend.position=c(0.5, 0.9),
+    text = element_text(color = "#22211d"),
+    plot.background = element_rect(fill = "#f5f5f2", color = NA),
+    panel.background = element_rect(fill = "#f5f5f2", color = NA), 
+    legend.background = element_rect(fill = "#f5f5f2", color = NA),
+    plot.title = element_text(size=12, hjust=0.5, color = "#4e4d47", margin = margin(b = -0.1, t = 0.4,
+                                                                                     l = 2, unit = "cm")),
+  )
+```
+```{r  State colony loss map during colder months in 2020}
+
+loss_2020_coldmonths <- colony %>% 
+  select(everything()) %>% 
+  filter((Year == 2020) & (Quarter %in% c("Q1", "Q4"))) %>% 
+  group_by(State, Year) %>% 
+  mutate(tot_loss = sum(`Lost Colonies`)) %>% 
+  mutate(avg_loss = mean(`Percent Loss`)) %>% 
+  arrange(State, Year)
+
+summary(loss_2020_coldmonths)  
+
+# map creation
+
+map <- geojson_read("us_states_hexgrid.geojson", what = "sp")
+map@data <-  map@data %>%
+  mutate(google_name = gsub(" \\(United States\\)", "", google_name))
+map_fortified <- tidy(map, region = "google_name")
+
+# calculating centroid of each hexagon and adding labels 
+
+centers <- cbind.data.frame(data.frame(gCentroid(map, byid= TRUE), id=map@data$iso3166_2))
+
+# merge geospatial and numerical data 
+loss_2020_coldmonths_fortified <- map_fortified %>% 
+  left_join(. , loss_2020_coldmonths, by=c("id" = "State"))
+
+loss_2020_coldmonths_fortified
+
+# prepare binning 
+loss_2020_coldmonths_fortified$bin <- cut(loss_2020_coldmonths_fortified$avg_loss, breaks = c(seq(1,32,8), Inf), labels = c("1-8", "9-16", "17-24", "25+"), include.lowest=TRUE)
+
+# colour scale from viridis color palette
+my_palette <- rev(plasma(8))[c(-1,-8)]
+
+# plotting 
+ggplot() + 
+  geom_polygon(data = loss_2020_coldmonths_fortified, aes(fill = bin, x = long, y= lat, group = group),color = "white",
+               size = 0, alpha = 0.9) + 
+  geom_text(data = centers, aes(x=x, y=y, label=id),color="white", size = 3, alpha = 0.6) + 
+  theme_void() + 
+  scale_fill_manual(
+    values = my_palette,
+    name = "Average Percentage Colony Loss",
+    guide = guide_legend(keyheight = unit(3, units = "mm"), keywidth=unit(12, units = "mm"), 
+                         label.position = "bottom", title.position = "top", nrow=1)) + 
+  ggtitle("A Map of Percent Colony Loss During Colder Months by State in 2020") + 
+  theme(
+    legend.position=c(0.5, 0.9),
+    text = element_text(color = "#22211d"),
+    plot.background = element_rect(fill = "#f5f5f2", color = NA),
+    panel.background = element_rect(fill = "#f5f5f2", color = NA), 
+    legend.background = element_rect(fill = "#f5f5f2", color = NA),
+    plot.title = element_text(size=12, hjust=0.5, color = "#4e4d47", margin = margin(b = -0.1, t = 0.4,
+                                                                                     l = 2, unit = "cm")),
+  )
+```
+
+```{r  State colony loss map during colder months in 2021}
+
+loss_2021_coldmonths <- colony %>% 
+  select(everything()) %>% 
+  filter((Year == 2021) & (Quarter %in% c("Q1", "Q4"))) %>% 
+  group_by(State, Year) %>% 
+  mutate(tot_loss = sum(`Lost Colonies`)) %>% 
+  mutate(avg_loss = mean(`Percent Loss`)) %>% 
+  arrange(State, Year)
+
+summary(loss_2021_coldmonths)  
+
+# map creation
+
+map <- geojson_read("us_states_hexgrid.geojson", what = "sp")
+map@data <-  map@data %>%
+  mutate(google_name = gsub(" \\(United States\\)", "", google_name))
+map_fortified <- tidy(map, region = "google_name")
+
+# calculating centroid of each hexagon and adding labels 
+
+centers <- cbind.data.frame(data.frame(gCentroid(map, byid= TRUE), id=map@data$iso3166_2))
+
+# merge geospatial and numerical data 
+loss_2021_coldmonths_fortified <- map_fortified %>% 
+  left_join(. , loss_2021_coldmonths, by=c("id" = "State"))
+
+loss_2021_coldmonths_fortified
+
+# prepare binning 
+loss_2021_coldmonths_fortified$bin <- cut(loss_2021_coldmonths_fortified$avg_loss, breaks = c(seq(1,32,8), Inf), labels = c("1-8", "9-16", "17-24", "25+"), include.lowest=TRUE)
+
+# colour scale from viridis color palette
+my_palette <- rev(plasma(8))[c(-1,-8)]
+
+# plotting 
+ggplot() + 
+  geom_polygon(data = loss_2021_coldmonths_fortified, aes(fill = bin, x = long, y= lat, group = group),color = "white",
+               size = 0, alpha = 0.9) + 
+  geom_text(data = centers, aes(x=x, y=y, label=id),color="white", size = 3, alpha = 0.6) + 
+  theme_void() + 
+  scale_fill_manual(
+    values = my_palette,
+    name = "Average Percentage Colony Loss",
+    guide = guide_legend(keyheight = unit(3, units = "mm"), keywidth=unit(12, units = "mm"), 
+                         label.position = "bottom", title.position = "top", nrow=1)) + 
+  ggtitle("A Map of Percent Colony Loss During Colder Months by State in 2021") + 
+  theme(
+    legend.position=c(0.5, 0.9),
+    text = element_text(color = "#22211d"),
+    plot.background = element_rect(fill = "#f5f5f2", color = NA),
+    panel.background = element_rect(fill = "#f5f5f2", color = NA), 
+    legend.background = element_rect(fill = "#f5f5f2", color = NA),
+    plot.title = element_text(size=12, hjust=0.5, color = "#4e4d47", margin = margin(b = -0.1, t = 0.4,
+                                                                                     l = 2, unit = "cm")),
+  )
+```
 
 
-
-
+```{r}
+colony
+```
 
 
 
