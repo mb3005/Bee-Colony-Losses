@@ -819,6 +819,10 @@ colony %>%
   arrange(`Percent Loss`, descending = FALSE)
 ```
 
+```{r}
+US_colony
+
+```
 
 
 
