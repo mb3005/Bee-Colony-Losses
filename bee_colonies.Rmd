@@ -789,8 +789,22 @@ ggplot() +
 ```
 
 
-```{r}
-colony
+```{r  Backtracking -- plotting total colonies over time}
+US_colony3 <- US_colony %>% 
+  mutate(Date = str_c(Year, Quarter, sep=" "))
+
+US_colony3 <- US_colony3 %>% 
+  mutate(colonies_mils = round((`Starting Colonies`/1000000), 2))
+  
+US_colony3 %>% 
+  ggplot(aes(x = Date, y= colonies_mils)) + geom_col(fill = "#e3b526") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+  labs(x = 'Date', y='Number of Colonies (Millions)', title = 'Number of Bee Colonies in the US Over Time')+
+  theme(plot.title = element_text(hjust = .5)) +
+  scale_fill_brewer(palette = "Paired") 
+
+  
 ```
 
 
