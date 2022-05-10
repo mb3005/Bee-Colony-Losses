@@ -240,7 +240,8 @@ US_stressors %>%
 
 US_stressors
 
-# Joining US stressors data and US colonies 
+```
+```{r   Joining US stressors data and US colonies }
 
 US_colony_stressors <- inner_join(US_stressors, US_colony2, by="Date")
 
@@ -251,6 +252,12 @@ US_colony_stressors %>%
   gg
 
 ```
+
+
+
+
+
+
 ```{r}
 US_stressors
 US_stressors %>% 
@@ -824,21 +831,46 @@ US_colony3 %>%
 
 ```
 
-```{r Loading State Temperature Data; manually collected from }
+```{r Loading State Temperature Data; joining with colony data }
 
 conso_temp <- read.csv("Conso Temp.csv")
 conso_temp
 
 conso_temp$Date <- str_replace(conso_temp$Date, "04", "")
 
-conso_temp
+conso_temp <- conso_temp %>% 
+  rename(Year = Date)
 
+colony <- colony %>% 
+  group_by(State, Year) %>% 
+  mutate(yr_losses = mean(`Percent Loss`)) %>% 
+  arrange(State, Year)
+
+colony3 <- colony
+
+colony_temp <- inner_join(colony3, conso_temp, by = c("State", "Year"))
+
+colony_temp <- colony_temp %>% 
+  rename(Temp = Value)
 
 ```
 
-```{r}
+```{r Plotting Temp vs Colony Loss}
 
+sapply(colony_temp, class)
+colony_temp$Year <- factor(colony_temp$Year)
+colony_temp$State <- factor(colony_temp$State)
 
+colony_temp %>% 
+  ggplot(aes(x = Temp, y = `Percent Loss`)) + geom_point(color = "#65a7d6") + geom_smooth(method = lm, se = TRUE, color = "#8752bf") + 
+  theme_bw() + 
+  labs(x = 'Temp (F)', y='Percent Loss of Colonies', title = 'Relationship Between Average Yearly Temperature and Yearly Percent Colony Loss')+
+  theme(plot.title = element_text(hjust = .5, size = 12)) 
+
+col_temp <- lm(`Percent Loss` ~ Temp, data = colony_temp)
+summary(col_temp)   # Multiple R-squared:  0.0211,	Adjusted R-squared:  0.02021  
+
+# Temperature is correlated, but is not explaining much of the variance 
 ```
 
 
