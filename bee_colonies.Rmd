@@ -1075,4 +1075,15 @@ colony_stressors %>%
 Unknown <- lm(`Percent Loss` ~ `Unknown`, data = colony_stressors)
 summary(Unknown)   # Multiple R-squared:  0.0211,	Adjusted R-squared:  0.02021  
 ```
+```{r}
+# Starting Colony Size
+colony_stressors %>% 
+  ggplot(aes(x = `Unknown`, y = `Starting Colonies`)) + geom_point(color = "#65a7d6") + geom_smooth(method = lm, se = TRUE, color = "#8752bf") + 
+  theme_bw() + 
+  labs(x = 'Starting Colonies', y='Percent Loss of Colonies', title = 'Starting Colonies vs Percent Colony Loss')+
+  theme(plot.title = element_text(hjust = .5, size = 12)) 
+
+start <- lm(`Percent Loss` ~ `Starting Colonies`, data = colony_stressors)
+summary(start) 
+```
 
