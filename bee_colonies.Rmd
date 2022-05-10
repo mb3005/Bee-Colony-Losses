@@ -960,10 +960,14 @@ s_bar
 ```
 
 ```{r  Stressors by State}
+stress_long <- stress_long %>% 
+  group_by(Year, category) %>% 
+  mutate(avg_pc = mean(percentage))
+
 s_bar <- stress_long %>%
   filter(!is.na(percentage)) %>% 
   ggplot() + 
-  geom_col(aes(x = category, y = percentage, fill = State), position = "dodge") +
+  geom_col(aes(x = category, y = avg_pc, fill = State), position = "dodge") +
   ggtitle("Colony Stressor Groups") +
   xlab("Category") +
   ylab("Percentage Affected") +
