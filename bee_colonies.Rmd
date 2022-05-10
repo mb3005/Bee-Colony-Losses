@@ -322,7 +322,7 @@ US_honey_totprod %>%
   ggplot(aes(x=Year, y= `Production (1,000 pounds)`)) + geom_col(fill = "#e3b526") +
   labs(x = 'Year', y='Honey Production (1,000 lbs)', title = 'Amount of Honey Produced in the US Over Time')+
   theme(plot.title = element_text(hjust = .5)) 
-  
+
 
 ```
 
@@ -913,20 +913,20 @@ low_10 %>% ggplot(aes(x = State, y = avg_perc_loss, fill = State)) + geom_col() 
 US_colony_stressors <- inner_join(US_stressors, US_colony2, by="Date")
 
 US_colony_stressors <- US_colony_stressors %>%  
-select(State.x, `Varroa Mites (Percent)`, `Other pests and parasites (Percent)`, `Diseases (percent)`, `Pesticides (percent)`, `Other (percent)`, `Unknown (percent)`, Date) #`Starting Colonies`, `Lost Colonies`, `Percent Loss`, `Added Colonies`, `Renovated Colonies`, `Percent Renovated`, tot_loss, rel_perc_loss)
+  select(State.x, `Varroa Mites (Percent)`, `Other pests and parasites (Percent)`, `Diseases (percent)`, `Pesticides (percent)`, `Other (percent)`, `Unknown (percent)`, Date) #`Starting Colonies`, `Lost Colonies`, `Percent Loss`, `Added Colonies`, `Renovated Colonies`, `Percent Renovated`, tot_loss, rel_perc_loss)
 ```
 
 ```{r}
 US_colony_stressors %>% 
   ggplot(aes(x =Date, y=`Varroa Mites (Percent)`, group = 1)) + geom_line() +
-    theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) + 
   theme_bw()
 ```
 
 ```{r}
 US_colony_stressors %>% 
   ggplot(aes(x =Date, y=`Other pests and parasites (Percent)`, group = 1)) + geom_line() +
-    theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) 
 
 
 ```
@@ -955,7 +955,7 @@ s_bar <- stress_long %>%
   theme_bw() +
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) 
 
-  
+
 s_bar
 ```
 
@@ -972,5 +972,107 @@ s_bar <- stress_long %>%
 
 s_bar
 ```
+```{r  Fitting a model  }
+stressors <- stressors %>% 
+  mutate(Date = str_c(Year, Quarter, sep = " "))
 
+colony_temp <- colony_temp %>% 
+  mutate(Date = str_c(Year, Quarter, sep = " "))
+
+colony_stressors <- inner_join(stressors, colony_temp, by=c("Date", "State"))
+
+colony_stressors <- select(colony_stressors, -one_of("tot_loss", "rel_perc_loss"))
+
+colony_stressors <- colony_stressors %>% 
+  group_by(State, Year.x) %>% 
+  mutate(tot_loss = sum(`Lost Colonies`)) %>% 
+  mutate(rel_perc_loss = round((`Lost Colonies`*100 /`tot_loss`),0))
+
+
+# full model first iteration
+fullmodel <- lm(rel_perc_loss ~ Quarter.x + Temp +`Varroa Mites` + `Other pests and parasites`+ Diseases + Pesticides + Other + Unknown + `Starting Colonies`, data = colony_stressors)
+
+summary(fullmodel)
+plot(fullmodel)
+vif(fullmodel)  # no multi collinearity
+
+temp_model <- lm(rel_perc_loss ~ Temp, data = colony_stressors)
+summary(temp_model)
+```
+
+```{r  Exploring Correlation of Each Stressor with Colony Loss }
+colony_stressors
+
+# Varroa Mites
+colony_stressors %>% 
+  ggplot(aes(x = `Varroa Mites`, y = `Percent Loss`)) + geom_point(color = "#65a7d6") + geom_smooth(method = lm, se = TRUE, color = "#8752bf") + 
+  theme_bw() + 
+  labs(x = 'Varroa Mites (Percent)', y='Percent Loss of Colonies', title = 'Percent Colonies Infected with Varroa Mites vs Percent Colony Loss')+
+  theme(plot.title = element_text(hjust = .5, size = 10)) 
+
+mites <- lm(`Percent Loss` ~ `Varroa Mites`, data = colony_stressors)
+summary(mites)   # Multiple R-squared:  0.0211,	Adjusted R-squared:  0.02021  
+
+```
+```{r}
+# Other Pests
+colony_stressors %>% 
+  ggplot(aes(x = `Other pests and parasites`, y = `Percent Loss`)) + geom_point(color = "#65a7d6") + geom_smooth(method = lm, se = TRUE, color = "#8752bf") + 
+  theme_bw() + 
+  labs(x = 'Other Pests and Parasites (Percent)', y='Percent Loss of Colonies', title = 'Percent Colonies Infected with Other Pests and Parasites vs Percent Colony Loss')+
+  theme(plot.title = element_text(hjust = .5, size = 12)) 
+
+pests <- lm(`Percent Loss` ~ `Other pests and parasites`, data = colony_stressors)
+summary(pests)   # Multiple R-squared:  0.0211,	Adjusted R-squared:  0.02021  
+
+```
+
+```{r}
+# Diseases
+colony_stressors %>% 
+  ggplot(aes(x = `Diseases`, y = `Percent Loss`)) + geom_point(color = "#65a7d6") + geom_smooth(method = lm, se = TRUE, color = "#8752bf") + 
+  theme_bw() + 
+  labs(x = 'Diseases (Percent)', y='Percent Loss of Colonies', title = 'Percent Colonies Affected by Diseases and Parasites vs Percent Colony Loss')+
+  theme(plot.title = element_text(hjust = .5, size = 12)) 
+
+diseases <- lm(`Percent Loss` ~ `Diseases`, data = colony_stressors)
+summary(diseases)   # Multiple R-squared:  0.0211,	Adjusted R-squared:  0.02021  
+
+```
+```{r}
+# Pesticides
+colony_stressors %>% 
+  ggplot(aes(x = `Pesticides`, y = `Percent Loss`)) + geom_point(color = "#65a7d6") + geom_smooth(method = lm, se = TRUE, color = "#8752bf") + 
+  theme_bw() + 
+  labs(x = 'Pesticides (Percent)', y='Percent Loss of Colonies', title = 'Percent Colonies Affected by Pesticides vs Percent Colony Loss')+
+  theme(plot.title = element_text(hjust = .5, size = 12)) 
+
+pesticides <- lm(`Percent Loss` ~ `Pesticides`, data = colony_stressors)
+summary(pesticides)   # Multiple R-squared:  0.0211,	Adjusted R-squared:  0.02021  
+
+```
+
+```{r}
+# Other
+colony_stressors %>% 
+  ggplot(aes(x = `Other`, y = `Percent Loss`)) + geom_point(color = "#65a7d6") + geom_smooth(method = lm, se = TRUE, color = "#8752bf") + 
+  theme_bw() + 
+  labs(x = 'Other (Percent)', y='Percent Loss of Colonies', title = 'Percent Colonies Affected by Other vs Percent Colony Loss')+
+  theme(plot.title = element_text(hjust = .5, size = 12)) 
+
+Other <- lm(`Percent Loss` ~ `Other`, data = colony_stressors)
+summary(Other)  
+
+```
+```{r}
+# Unknown
+colony_stressors %>% 
+  ggplot(aes(x = `Unknown`, y = `Percent Loss`)) + geom_point(color = "#65a7d6") + geom_smooth(method = lm, se = TRUE, color = "#8752bf") + 
+  theme_bw() + 
+  labs(x = 'Unknown (Percent)', y='Percent Loss of Colonies', title = 'Percent Colonies Affected by Unknown vs Percent Colony Loss')+
+  theme(plot.title = element_text(hjust = .5, size = 12)) 
+
+Unknown <- lm(`Percent Loss` ~ `Unknown`, data = colony_stressors)
+summary(Unknown)   # Multiple R-squared:  0.0211,	Adjusted R-squared:  0.02021  
+```
 
