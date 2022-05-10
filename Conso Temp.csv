@@ -1,0 +1,393 @@
+﻿State,Date,Value,Anomaly
+Alabama,201504,62.8,-0.3
+Alabama,201604,65.2,2.1
+Alabama,201704,66.8,3.7
+Alabama,201804,63.3,0.2
+Alabama,201904,65.1,2
+Alabama,202004,65.8,2.7
+Alabama,202104,63.9,0.8
+Alabama,202204,64.2,1.1
+Alaska,201504,30.1,4.1
+Alaska,201604,31.9,5.9
+Alaska,201704,28.5,2.5
+Alaska,201804,30.9,4.9
+Alaska,201904,31.6,5.6
+Alaska,202004,28.6,2.6
+Alaska,202104,28.3,2.3
+Alaska,202204,27.3,1.3
+Arizona,201504,62.4,3.1
+Arizona,201604,61.2,1.9
+Arizona,201704,62.4,3.1
+Arizona,201804,63.1,3.8
+Arizona,201904,61.1,1.8
+Arizona,202004,60.6,1.3
+Arizona,202104,62.6,3.3
+Arizona,202204,62.3,3
+Arkansas,201504,59.2,-1.2
+Arkansas,201604,62.9,2.5
+Arkansas,201704,63.9,3.5
+Arkansas,201804,60.3,-0.1
+Arkansas,201904,61.6,1.2
+Arkansas,202004,61.8,1.4
+Arkansas,202104,60,-0.4
+Arkansas,202204,61.5,1.1
+California,201504,61.8,4.4
+California,201604,60,2.6
+California,201704,59.4,2
+California,201804,60.6,3.2
+California,201904,59.5,2.1
+California,202004,58.8,1.4
+California,202104,60.5,3.1
+California,202204,60.7,3.3
+Colorado,201504,47.2,2.6
+Colorado,201604,46.8,2.2
+Colorado,201704,47.9,3.3
+Colorado,201804,47.3,2.7
+Colorado,201904,46.3,1.7
+Colorado,202004,45.8,1.2
+Colorado,202104,46.8,2.2
+Colorado,202204,47.4,2.8
+Connecticut,201504,47.9,-0.2
+Connecticut,201604,52.7,4.6
+Connecticut,201704,51.8,3.7
+Connecticut,201804,50,1.9
+Connecticut,201904,50.8,2.7
+Connecticut,202004,50.7,2.6
+Connecticut,202104,51.2,3.1
+Connecticut,202204,51,2.9
+Delaware,201504,54.4,0.2
+Delaware,201604,58.3,4.1
+Delaware,201704,58.3,4.1
+Delaware,201804,56.1,1.9
+Delaware,201904,57.8,3.6
+Delaware,202004,58.1,3.9
+Delaware,202104,57.2,3
+Delaware,202204,57.1,2.9
+Florida,201504,71.3,1.2
+Florida,201604,73.1,3
+Florida,201704,73.3,3.2
+Florida,201804,72.1,2
+Florida,201904,72.7,2.6
+Florida,202004,73.7,3.6
+Florida,202104,72.4,2.3
+Florida,202204,72.3,2.2
+Georgia,201504,63.6,0.2
+Georgia,201604,65.8,2.4
+Georgia,201704,67.1,3.7
+Georgia,201804,64.3,0.9
+Georgia,201904,65.8,2.4
+Georgia,202004,66.6,3.2
+Georgia,202104,64.7,1.3
+Georgia,202204,64.7,1.3
+Idaho,201504,46.2,3.6
+Idaho,201604,45.9,3.3
+Idaho,201704,43.8,1.2
+Idaho,201804,44.8,2.2
+Idaho,201904,43.9,1.3
+Idaho,202004,43.4,0.8
+Idaho,202104,44.2,1.6
+Idaho,202204,44.8,2.2
+Illinois,201504,50.5,-1.1
+Illinois,201604,54.8,3.2
+Illinois,201704,55.7,4.1
+Illinois,201804,51.6,0
+Illinois,201904,52.9,1.3
+Illinois,202004,53.2,1.6
+Illinois,202104,52.6,1
+Illinois,202204,53.3,1.7
+Indiana,201504,50,-1.3
+Indiana,201604,54.5,3.2
+Indiana,201704,55.4,4.1
+Indiana,201804,51.3,0
+Indiana,201904,53.1,1.8
+Indiana,202004,53.4,2.1
+Indiana,202104,52.6,1.3
+Indiana,202204,53.2,1.9
+Iowa,201504,47.1,-0.4
+Iowa,201604,50.6,3.1
+Iowa,201704,51.3,3.8
+Iowa,201804,47.1,-0.4
+Iowa,201904,47.6,0.1
+Iowa,202004,48.5,1
+Iowa,202104,48.6,1.1
+Iowa,202204,49.1,1.6
+Kansas,201504,54.9,0.8
+Kansas,201604,57.3,3.2
+Kansas,201704,57.3,3.2
+Kansas,201804,54.4,0.3
+Kansas,201904,54.5,0.4
+Kansas,202004,55.1,1
+Kansas,202104,54.7,0.6
+Kansas,202204,56.2,2.1
+Kentucky,201504,54.5,-1
+Kentucky,201604,58.2,2.7
+Kentucky,201704,59.3,3.8
+Kentucky,201804,55.6,0.1
+Kentucky,201904,57.7,2.2
+Kentucky,202004,58,2.5
+Kentucky,202104,56.2,0.7
+Kentucky,202204,57,1.5
+Louisiana,201504,66,-0.4
+Louisiana,201604,69,2.6
+Louisiana,201704,70.1,3.7
+Louisiana,201804,66.8,0.4
+Louisiana,201904,67.9,1.5
+Louisiana,202004,68.6,2.2
+Louisiana,202104,66.8,0.4
+Louisiana,202204,67.5,1.1
+Maine,201504,40.3,0.2
+Maine,201604,43.9,3.8
+Maine,201704,43.1,3
+Maine,201804,42.1,2
+Maine,201904,41,0.9
+Maine,202004,41.9,1.8
+Maine,202104,43.9,3.8
+Maine,202204,43.2,3.1
+Maryland,201504,53.4,-0.4
+Maryland,201604,57.3,3.5
+Maryland,201704,57.6,3.8
+Maryland,201804,54.8,1
+Maryland,201904,56.7,2.9
+Maryland,202004,57.3,3.5
+Maryland,202104,56.5,2.7
+Maryland,202204,56.7,2.9
+Massachusetts,201504,46.8,-0.1
+Massachusetts,201604,51.3,4.4
+Massachusetts,201704,50.4,3.5
+Massachusetts,201804,48.7,1.8
+Massachusetts,201904,49.5,2.6
+Massachusetts,202004,49.5,2.6
+Massachusetts,202104,50.5,3.6
+Massachusetts,202204,50.5,3.6
+Michigan,201504,42.6,-1
+Michigan,201604,47.4,3.8
+Michigan,201704,48.1,4.5
+Michigan,201804,44.2,0.6
+Michigan,201904,45,1.4
+Michigan,202004,45.5,1.9
+Michigan,202104,46.4,2.8
+Michigan,202204,45.9,2.3
+Minnesota,201504,41.2,1.1
+Minnesota,201604,44.8,4.7
+Minnesota,201704,44.6,4.5
+Minnesota,201804,40,-0.1
+Minnesota,201904,40.3,0.2
+Minnesota,202004,41.1,1
+Minnesota,202104,42.8,2.7
+Minnesota,202204,41.8,1.7
+Mississippi,201504,63.3,-0.3
+Mississippi,201604,66.1,2.5
+Mississippi,201704,67.4,3.8
+Mississippi,201804,63.7,0.1
+Mississippi,201904,65.3,1.7
+Mississippi,202004,66,2.4
+Mississippi,202104,64.2,0.6
+Mississippi,202204,65,1.4
+Missouri,201504,53.9,-0.6
+Missouri,201604,57.4,2.9
+Missouri,201704,58.2,3.7
+Missouri,201804,54.5,0
+Missouri,201904,55.7,1.2
+Missouri,202004,55.8,1.3
+Missouri,202104,54.9,0.4
+Missouri,202204,56.1,1.6
+Montana,201504,43.9,2.8
+Montana,201604,45.3,4.2
+Montana,201704,42.9,1.8
+Montana,201804,41.6,0.5
+Montana,201904,41.1,0
+Montana,202004,41.7,0.6
+Montana,202104,43.1,2
+Montana,202204,43.7,2.6
+Nebraska,201504,49.4,1
+Nebraska,201604,51.5,3.1
+Nebraska,201704,51.4,3
+Nebraska,201804,48.4,0
+Nebraska,201904,48.3,-0.1
+Nebraska,202004,49.1,0.7
+Nebraska,202104,49.8,1.4
+Nebraska,202204,51.2,2.8
+Nevada,201504,53.6,4.1
+Nevada,201604,51.8,2.3
+Nevada,201704,51.6,2.1
+Nevada,201804,52.4,2.9
+Nevada,201904,51.4,1.9
+Nevada,202004,50.4,0.9
+Nevada,202104,52.2,2.7
+Nevada,202204,52.6,3.1
+New Hampshire,201504,42.2,-0.1
+New Hampshire,201604,46.7,4.4
+New Hampshire,201704,45.7,3.4
+New Hampshire,201804,44.1,1.8
+New Hampshire,201904,44,1.7
+New Hampshire,202004,44.4,2.1
+New Hampshire,202104,45.6,3.3
+New Hampshire,202204,45.5,3.2
+New Jersey,201504,51.6,0.1
+New Jersey,201604,56.2,4.7
+New Jersey,201704,55.5,4
+New Jersey,201804,53.2,1.7
+New Jersey,201904,54.6,3.1
+New Jersey,202004,55.2,3.7
+New Jersey,202104,54.8,3.3
+New Jersey,202204,54.8,3.3
+New Mexico,201504,54.8,2
+New Mexico,201604,54.9,2.1
+New Mexico,201704,56.3,3.5
+New Mexico,201804,55.9,3.1
+New Mexico,201904,54.9,2.1
+New Mexico,202004,54.8,2
+New Mexico,202104,55.4,2.6
+New Mexico,202204,55.4,2.6
+New York,201504,43.8,-0.7
+New York,201604,48.6,4.1
+New York,201704,48.2,3.7
+New York,201804,45.3,0.8
+New York,201904,46.3,1.8
+New York,202004,46.5,2
+New York,202104,47.3,2.8
+New York,202204,46.9,2.4
+North Carolina,201504,58.5,0
+North Carolina,201604,61.5,3
+North Carolina,201704,62,3.5
+North Carolina,201804,59.4,0.9
+North Carolina,201904,61.2,2.7
+North Carolina,202004,61.8,3.3
+North Carolina,202104,59.8,1.3
+North Carolina,202204,60.4,1.9
+North Dakota,201504,41.2,1.5
+North Dakota,201604,44.8,5.1
+North Dakota,201704,43,3.3
+North Dakota,201804,39.8,0.1
+North Dakota,201904,39.3,-0.4
+North Dakota,202004,40.4,0.7
+North Dakota,202104,42.7,3
+North Dakota,202204,41.7,2
+Ohio,201504,49.3,-1.1
+Ohio,201604,54,3.6
+Ohio,201704,54.8,4.4
+Ohio,201804,50.8,0.4
+Ohio,201904,52.7,2.3
+Ohio,202004,53.3,2.9
+Ohio,202104,52.4,2
+Ohio,202204,52.7,2.3
+Oklahoma,201504,59.7,0
+Oklahoma,201604,62,2.3
+Oklahoma,201704,62.9,3.2
+Oklahoma,201804,59.8,0.1
+Oklahoma,201904,60.3,0.6
+Oklahoma,202004,60.8,1.1
+Oklahoma,202104,59.5,-0.2
+Oklahoma,202204,61.2,1.5
+Oregon,201504,50.5,4
+Oregon,201604,49.9,3.4
+Oregon,201704,47.2,0.7
+Oregon,201804,48.7,2.2
+Oregon,201904,47.9,1.4
+Oregon,202004,47.8,1.3
+Oregon,202104,48.7,2.2
+Oregon,202204,49.1,2.6
+Pennsylvania,201504,47.3,-0.8
+Pennsylvania,201604,51.8,3.7
+Pennsylvania,201704,51.8,3.7
+Pennsylvania,201804,48.6,0.5
+Pennsylvania,201904,50.4,2.3
+Pennsylvania,202004,50.9,2.8
+Pennsylvania,202104,50.6,2.5
+Pennsylvania,202204,50.5,2.4
+Rhode Island,201504,48.8,0.2
+Rhode Island,201604,53,4.4
+Rhode Island,201704,52.3,3.7
+Rhode Island,201804,50.9,2.3
+Rhode Island,201904,51.4,2.8
+Rhode Island,202004,51.6,3
+Rhode Island,202104,52.3,3.7
+Rhode Island,202204,52.4,3.8
+South Carolina,201504,62.6,0.2
+South Carolina,201604,65.2,2.8
+South Carolina,201704,66.1,3.7
+South Carolina,201804,63.4,1
+South Carolina,201904,64.9,2.5
+South Carolina,202004,65.5,3.1
+South Carolina,202104,63.7,1.3
+South Carolina,202204,64,1.6
+South Dakota,201504,45.7,1.1
+South Dakota,201604,48.2,3.6
+South Dakota,201704,47.5,2.9
+South Dakota,201804,44.2,-0.4
+South Dakota,201904,43.8,-0.8
+South Dakota,202004,44.7,0.1
+South Dakota,202104,46.8,2.2
+South Dakota,202204,47.2,2.6
+Tennessee,201504,57,-0.7
+Tennessee,201604,60.2,2.5
+Tennessee,201704,61.7,4
+Tennessee,201804,57.8,0.1
+Tennessee,201904,59.9,2.2
+Tennessee,202004,60.2,2.5
+Tennessee,202104,58.5,0.8
+Tennessee,202204,59,1.3
+Texas,201504,65,0.4
+Texas,201604,66.9,2.3
+Texas,201704,68.1,3.5
+Texas,201804,65.7,1.1
+Texas,201904,65.9,1.3
+Texas,202004,66.6,2
+Texas,202104,65.7,1.1
+Texas,202204,66.4,1.8
+Utah,201504,51.2,3.7
+Utah,201604,49.7,2.2
+Utah,201704,50.5,3
+Utah,201804,50.7,3.2
+Utah,201904,49.4,1.9
+Utah,202004,48.5,1
+Utah,202104,50.2,2.7
+Utah,202204,50.6,3.1
+Vermont,201504,41,-0.3
+Vermont,201604,45.7,4.4
+Vermont,201704,44.9,3.6
+Vermont,201804,42.7,1.4
+Vermont,201904,42.8,1.5
+Vermont,202004,43.3,2
+Vermont,202104,44.4,3.1
+Vermont,202204,44.3,3
+Virginia,201504,54.5,-0.3
+Virginia,201604,57.8,3
+Virginia,201704,58.3,3.5
+Virginia,201804,55.5,0.7
+Virginia,201904,57.4,2.6
+Virginia,202004,58.1,3.3
+Virginia,202104,56.5,1.7
+Virginia,202204,57.1,2.3
+Washington,201504,49.8,3.7
+Washington,201604,49.9,3.8
+Washington,201704,46.4,0.3
+Washington,201804,47.9,1.8
+Washington,201904,47.2,1.1
+Washington,202004,47.5,1.4
+Washington,202104,47.9,1.8
+Washington,202204,47.8,1.7
+West Virginia,201504,50.8,-0.8
+West Virginia,201604,54.7,3.1
+West Virginia,201704,55.4,3.8
+West Virginia,201804,51.9,0.3
+West Virginia,201904,54.2,2.6
+West Virginia,202004,54.7,3.1
+West Virginia,202104,53,1.4
+West Virginia,202204,53.3,1.7
+Wisconsin,201504,42.2,-0.2
+Wisconsin,201604,46.5,4.1
+Wisconsin,201704,46.6,4.2
+Wisconsin,201804,42.3,-0.1
+Wisconsin,201904,43.2,0.8
+Wisconsin,202004,43.9,1.5
+Wisconsin,202104,44.6,2.2
+Wisconsin,202204,44.1,1.7
+Wyoming,201504,43.6,2.8
+Wyoming,201604,43.8,3
+Wyoming,201704,43.4,2.6
+Wyoming,201804,42.6,1.8
+Wyoming,201904,41.6,0.8
+Wyoming,202004,40.9,0.1
+Wyoming,202104,42.4,1.6
+Wyoming,202204,43.7,2.9

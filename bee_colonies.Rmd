@@ -248,7 +248,7 @@ US_colony_stressors <- US_colony_stressors %>%
 select(State.x, `Varroa Mites (Percent)`, `Other pests and parasites (Percent)`, `Diseases (percent)`, `Pesticides (percent)`, `Other (percent)`, `Unknown (percent)`, Date, `Starting Colonies`, `Lost Colonies`, `Percent Loss`, `Added Colonies`, `Renovated Colonies`, `Percent Renovated`, tot_loss, rel_perc_loss)
 
 US_colony_stressors %>% 
-  ggplot()
+  gg
 
 ```
 ```{r}
@@ -824,14 +824,20 @@ US_colony3 %>%
 
 ```
 
-```{r}
-colony %>% 
-  filter(Quarter == "Q4") %>% 
-  arrange(`Percent Loss`, descending = FALSE)
+```{r Loading State Temperature Data; manually collected from }
+
+conso_temp <- read.csv("Conso Temp.csv")
+conso_temp
+
+conso_temp$Date <- str_replace(conso_temp$Date, "04", "")
+
+conso_temp
+
+
 ```
 
 ```{r}
-US_colony
+
 
 ```
 
