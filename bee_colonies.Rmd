@@ -873,6 +873,52 @@ summary(col_temp)   # Multiple R-squared:  0.0211,	Adjusted R-squared:  0.02021
 # Temperature is correlated, but is not explaining much of the variance 
 ```
 
+```{r   States with Most Colony Loss}
+
+top_loss <- colony3 %>% 
+  group_by(State) %>% 
+  filter(Quarter == 'Q1') %>% 
+  mutate(avg_perc_loss = round(mean(`Percent Loss`)),2) %>% 
+  arrange(desc(`avg_perc_loss`)) %>% 
+  filter(Year == "2015") %>% 
+  select(State, avg_perc_loss)
+
+top_10 <- top_loss[1:10,]
+sapply(top_10, class)
+top_10$State <- factor(top_10$State, levels = top_10$State)
+top_10 <- top_10 %>% 
+  arrange(desc(avg_perc_loss))
+
+top_10 %>% ggplot(aes(x = State, y = avg_perc_loss, fill = State)) + geom_col() + coord_flip() +
+  theme_bw() + 
+  scale_fill_brewer(palette="BrBG") + 
+  labs(x = 'State', y='Average Percent Loss of Colonies', title = 'States with the Highest Average Percentage Loss of Colonies in Winter from 2015-2021') + 
+  theme(plot.title = element_text(hjust = .5, size = 10)) +
+  geom_text(aes(label = avg_perc_loss, hjust = -0.2, vjust = 0.5))
+```
+
+```{r  States with Low Colony Loss} 
+
+low_loss <- colony3 %>% 
+  group_by(State) %>% 
+  filter(Quarter == 'Q1') %>% 
+  mutate(avg_perc_loss = round(mean(`Percent Loss`)),2) %>% 
+  arrange(`avg_perc_loss`) %>% 
+  filter(Year == "2015") %>% 
+  select(State, avg_perc_loss)
+
+low_10 <- low_loss[1:10,]
+sapply(low_10, class)
+low_10$State <- factor(low_10$State, levels = low_10$State)
+
+low_10 %>% ggplot(aes(x = State, y = avg_perc_loss, fill = State)) + geom_col() + coord_flip() +
+  theme_bw() + 
+  scale_fill_brewer(palette="BrBG") + 
+  labs(x = 'State', y='Average Percent Loss of Colonies', title = 'States with the Lowest Average Percentage Loss of Colonies in Winter from 2015-2021') + 
+  theme(plot.title = element_text(hjust = .5, size = 10)) +
+  geom_text(aes(label = avg_perc_loss, hjust = -0.2, vjust = 0.5))
+
+```
 
 
 
