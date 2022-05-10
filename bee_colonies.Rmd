@@ -15,6 +15,7 @@ library(geojsonio)
 library(rgdal)
 library(broom)
 library(rgeos)
+library(reshape2)
 detach(package:MASS, unload=TRUE)
 
 ```
@@ -241,21 +242,6 @@ US_stressors %>%
 US_stressors
 
 ```
-```{r   Joining US stressors data and US colonies }
-
-US_colony_stressors <- inner_join(US_stressors, US_colony2, by="Date")
-
-US_colony_stressors <- US_colony_stressors %>%  
-select(State.x, `Varroa Mites (Percent)`, `Other pests and parasites (Percent)`, `Diseases (percent)`, `Pesticides (percent)`, `Other (percent)`, `Unknown (percent)`, Date, `Starting Colonies`, `Lost Colonies`, `Percent Loss`, `Added Colonies`, `Renovated Colonies`, `Percent Renovated`, tot_loss, rel_perc_loss)
-
-US_colony_stressors %>% 
-  gg
-
-```
-
-
-
-
 
 
 ```{r}
@@ -891,7 +877,7 @@ top_10 <- top_10 %>%
 
 top_10 %>% ggplot(aes(x = State, y = avg_perc_loss, fill = State)) + geom_col() + coord_flip() +
   theme_bw() + 
-  scale_fill_brewer(palette="BrBG") + 
+  scale_fill_brewer(palette="Set3") + 
   labs(x = 'State', y='Average Percent Loss of Colonies', title = 'States with the Highest Average Percentage Loss of Colonies in Winter from 2015-2021') + 
   theme(plot.title = element_text(hjust = .5, size = 10)) +
   geom_text(aes(label = avg_perc_loss, hjust = -0.2, vjust = 0.5))
@@ -913,15 +899,78 @@ low_10$State <- factor(low_10$State, levels = low_10$State)
 
 low_10 %>% ggplot(aes(x = State, y = avg_perc_loss, fill = State)) + geom_col() + coord_flip() +
   theme_bw() + 
-  scale_fill_brewer(palette="BrBG") + 
+  scale_fill_brewer(palette="Set3") + 
   labs(x = 'State', y='Average Percent Loss of Colonies', title = 'States with the Lowest Average Percentage Loss of Colonies in Winter from 2015-2021') + 
   theme(plot.title = element_text(hjust = .5, size = 10)) +
   geom_text(aes(label = avg_perc_loss, hjust = -0.2, vjust = 0.5))
 
 ```
 
+```{r   Continuation of Stressors Evaluation; joining stressors and colony}
+
+# Joining US stressors data and US colonies 
+
+US_colony_stressors <- inner_join(US_stressors, US_colony2, by="Date")
+
+US_colony_stressors <- US_colony_stressors %>%  
+select(State.x, `Varroa Mites (Percent)`, `Other pests and parasites (Percent)`, `Diseases (percent)`, `Pesticides (percent)`, `Other (percent)`, `Unknown (percent)`, Date) #`Starting Colonies`, `Lost Colonies`, `Percent Loss`, `Added Colonies`, `Renovated Colonies`, `Percent Renovated`, tot_loss, rel_perc_loss)
+```
+
+```{r}
+US_colony_stressors %>% 
+  ggplot(aes(x =Date, y=`Varroa Mites (Percent)`, group = 1)) + geom_line() +
+    theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) + 
+  theme_bw()
+```
+
+```{r}
+US_colony_stressors %>% 
+  ggplot(aes(x =Date, y=`Other pests and parasites (Percent)`, group = 1)) + geom_line() +
+    theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) 
 
 
+```
+```{r  Stressors by Year}
+stressors <- stressors %>% 
+  rename(`Varroa Mites` = `Varroa Mites (Percent)`, `Other pests and parasites` = `Other pests and parasites (Percent)`, Diseases = `Diseases (percent)`, Pesticides = `Pesticides (percent)`, Other = `Other (percent)`, Unknown = `Unknown (percent)`)
+stress_long <- stressors %>%
+  pivot_longer(
+    cols = 2:7,
+    names_to = "category",
+    values_to = "percentage",
+    values_drop_na = TRUE)
 
+stress_long <- stress_long %>% 
+  group_by(Year, category) %>% 
+  mutate(avg_pc = mean(percentage))
+
+s_bar <- stress_long %>%
+  filter(!is.na(percentage)) %>% 
+  ggplot() + 
+  geom_col(aes(x = category, y = avg_pc, fill = Year), position = "dodge") +
+  ggtitle("Colony Stressor Groups") +
+  xlab("Category") +
+  ylab("Percentage Affected") + 
+  scale_fill_brewer(palette="Set3") + 
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) 
+
+  
+s_bar
+```
+
+```{r  Stressors by State}
+s_bar <- stress_long %>%
+  filter(!is.na(percentage)) %>% 
+  ggplot() + 
+  geom_col(aes(x = category, y = percentage, fill = State), position = "dodge") +
+  ggtitle("Colony Stressor Groups") +
+  xlab("Category") +
+  ylab("Percentage Affected") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) 
+
+s_bar
+```
 
 
